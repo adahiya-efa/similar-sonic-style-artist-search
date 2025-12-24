@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SonicArtist } from '../types';
 
 interface ArtistCardProps {
@@ -7,6 +7,8 @@ interface ArtistCardProps {
 }
 
 const ArtistCard: React.FC<ArtistCardProps> = ({ artist, index }) => {
+  const [loadingLink, setLoadingLink] = useState<string | null>(null);
+
   // Use the AI-optimized "searchableName" (e.g. "Afterlife Tale of Us") to ensure unique results.
   const queryName = artist.searchableName || artist.name;
   
@@ -35,6 +37,16 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ artist, index }) => {
     // 🔀 Mix: Search for playlists/mixes
     mix: `https://www.youtube.com/results?search_query=${deepDiveQuery}&sp=EgQYAhAB`
   };
+
+  const handleLinkClick = (key: string) => {
+    setLoadingLink(key);
+    // Simulate a brief "loading" state for visual feedback
+    setTimeout(() => setLoadingLink(null), 1000);
+  };
+
+  const Spinner = () => (
+    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+  );
 
   return (
     <div className="group bg-gray-900/40 backdrop-blur-sm border border-gray-800 hover:border-blue-500/50 transition-all duration-300 p-6 rounded-xl relative overflow-hidden flex flex-col h-full">
@@ -80,47 +92,58 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ artist, index }) => {
             href={ytmUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-syncopate font-bold text-xs tracking-widest rounded-lg transition-all shadow-lg hover:shadow-blue-500/20 active:scale-95 group/btn metallic-border w-full"
+            onClick={() => handleLinkClick('ytm')}
+            className="flex items-center justify-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-syncopate font-bold text-xs tracking-widest rounded-lg transition-all shadow-lg hover:shadow-blue-500/20 active:scale-95 group/btn metallic-border w-full h-[42px]"
           >
-            <span>LISTEN ON YTM</span>
-            <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            {loadingLink === 'ytm' ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <span>YOUTUBE MUSIC</span>
+                <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </>
+            )}
           </a>
           
-          {/* Secondary Actions: Deep Dive Grid (Restored to 2x2 with labels) */}
+          {/* Secondary Actions: Deep Dive Grid */}
           <div className="grid grid-cols-2 gap-2">
             <a 
               href={links.channel} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all"
+              onClick={() => handleLinkClick('channel')}
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all h-[34px]"
             >
-               <span>🏠 Official</span>
+               {loadingLink === 'channel' ? <Spinner /> : <span>🏠 YouTube</span>}
             </a>
             <a 
               href={links.popular} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all"
+              onClick={() => handleLinkClick('popular')}
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all h-[34px]"
             >
-               <span>🔍 Popular</span>
+               {loadingLink === 'popular' ? <Spinner /> : <span>🔍 Popular YT</span>}
             </a>
             <a 
               href={links.recent} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all"
+              onClick={() => handleLinkClick('recent')}
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all h-[34px]"
             >
-               <span>🕙 Recent</span>
+               {loadingLink === 'recent' ? <Spinner /> : <span>🕙 Recent YT</span>}
             </a>
             <a 
               href={links.mix} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all"
+              onClick={() => handleLinkClick('mix')}
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all h-[34px]"
             >
-               <span>🔀 Mix / Set</span>
+               {loadingLink === 'mix' ? <Spinner /> : <span>🔀 Mix YT</span>}
             </a>
           </div>
         </div>
