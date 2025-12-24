@@ -7,32 +7,43 @@ interface ArtistCardProps {
 }
 
 const ArtistCard: React.FC<ArtistCardProps> = ({ artist, index }) => {
-  // Replace spaces with + for the verbatim search rules as requested
-  const formattedName = artist.name.replace(/\s+/g, '+');
+  // Use the AI-optimized "searchableName" (e.g. "Afterlife Tale of Us") to ensure unique results.
+  const queryName = artist.searchableName || artist.name;
   
-  // Strictly constructed links based on the provided logic
+  // 1. YouTube Music Link (Primary)
+  // Keeps it clean using just the searchable name or direct ID
+  const ytmQuery = encodeURIComponent(queryName).replace(/%20/g, '+');
+  const ytmUrl = (artist.youtubeChannelId && artist.youtubeChannelId.startsWith('UC'))
+    ? `https://music.youtube.com/channel/${artist.youtubeChannelId}`
+    : `https://music.youtube.com/search?q=${ytmQuery}`;
+
+  // 2. Deep Dive Search Queries
+  // MUST include [ARTIST_NAME] + [SUB_GENRE] + music as per requirements to ensure specificity in main YouTube search.
+  const deepDiveQueryRaw = `"${queryName}" ${artist.subGenre} music`;
+  const deepDiveQuery = encodeURIComponent(deepDiveQueryRaw).replace(/%20/g, '+');
+  
   const links = {
-    // 1. [ 🏠 Official Channel ]: https://www.youtube.com/results?search_query="[ARTIST_NAME]"+official+artist+channel&sp=EgIQAg%3D%3D
-    official: `https://www.youtube.com/results?search_query=%22${formattedName}%22+official+artist+channel&sp=EgIQAg%3D%3D`,
-    
-    // 2. [ 🔍 Search Music ]: https://www.youtube.com/results?search_query="[ARTIST_NAME]"+music&sp=CAMSAhAB
-    search: `https://www.youtube.com/results?search_query=%22${formattedName}%22+music&sp=CAMSAhAB`,
-    
-    // 3. [ 🔀 Artist Mix ]: https://www.youtube.com/results?search_query=[ARTIST_NAME]+music&sp=EgQYAhAB
-    mix: `https://www.youtube.com/results?search_query=${formattedName}+music&sp=EgQYAhAB`,
-    
-    // 4. [ 📂 Topic Channel ]: https://www.youtube.com/results?search_query=[ARTIST_NAME]+-+Topic+music
-    topic: `https://www.youtube.com/results?search_query=${formattedName}+-+Topic+music`
+    // 🏠 Channel: Filter for channels
+    channel: `https://www.youtube.com/results?search_query=${deepDiveQuery}&sp=EgIQAg%3D%3D`,
+
+    // 🔍 Popular: Sort by view count
+    popular: `https://www.youtube.com/results?search_query=${deepDiveQuery}&sp=CAMSAhAB`,
+
+    // 🕙 Chronological: Sort by upload date
+    recent: `https://www.youtube.com/results?search_query=${deepDiveQuery}&sp=CAISAhAB`,
+
+    // 🔀 Mix: Search for playlists/mixes
+    mix: `https://www.youtube.com/results?search_query=${deepDiveQuery}&sp=EgQYAhAB`
   };
 
   return (
-    <div className="group bg-gray-900/40 backdrop-blur-sm border border-gray-800 hover:border-blue-500/50 transition-all duration-300 p-6 rounded-xl relative overflow-hidden">
+    <div className="group bg-gray-900/40 backdrop-blur-sm border border-gray-800 hover:border-blue-500/50 transition-all duration-300 p-6 rounded-xl relative overflow-hidden flex flex-col h-full">
       {/* Background Index Number */}
       <div className="absolute top-0 right-0 p-4 text-4xl font-syncopate text-gray-800/30 group-hover:text-blue-500/20 transition-colors pointer-events-none select-none">
         {String(index + 1).padStart(2, '0')}
       </div>
       
-      <div className="flex flex-col gap-4 relative z-10">
+      <div className="flex flex-col gap-4 relative z-10 flex-grow">
         <div>
           <h3 className="text-2xl font-syncopate font-bold text-gray-100 mb-1 group-hover:text-blue-400 transition-colors">
             {artist.name}
@@ -62,39 +73,56 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ artist, index }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 pt-2">
+        {/* Action Buttons */}
+        <div className="pt-4 mt-auto space-y-3">
+          {/* Primary Action: YouTube Music */}
           <a
-            href={links.official}
+            href={ytmUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-blue-600 text-gray-200 hover:text-white text-xs font-bold rounded transition-all metallic-border"
+            className="flex items-center justify-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-syncopate font-bold text-xs tracking-widest rounded-lg transition-all shadow-lg hover:shadow-blue-500/20 active:scale-95 group/btn metallic-border w-full"
           >
-            <span>🏠 Official</span>
+            <span>LISTEN ON YTM</span>
+            <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
           </a>
-          <a
-            href={links.search}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-blue-600 text-gray-200 hover:text-white text-xs font-bold rounded transition-all metallic-border"
-          >
-            <span>🔍 Search</span>
-          </a>
-          <a
-            href={links.mix}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-blue-600 text-gray-200 hover:text-white text-xs font-bold rounded transition-all metallic-border"
-          >
-            <span>🔀 Mix</span>
-          </a>
-          <a
-            href={links.topic}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-blue-600 text-gray-200 hover:text-white text-xs font-bold rounded transition-all metallic-border"
-          >
-            <span>📂 Topic</span>
-          </a>
+          
+          {/* Secondary Actions: Deep Dive Grid (Restored to 2x2 with labels) */}
+          <div className="grid grid-cols-2 gap-2">
+            <a 
+              href={links.channel} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all"
+            >
+               <span>🏠 Official</span>
+            </a>
+            <a 
+              href={links.popular} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all"
+            >
+               <span>🔍 Popular</span>
+            </a>
+            <a 
+              href={links.recent} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all"
+            >
+               <span>🕙 Recent</span>
+            </a>
+            <a 
+              href={links.mix} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] font-bold uppercase tracking-wider rounded border border-gray-700 hover:border-gray-500 transition-all"
+            >
+               <span>🔀 Mix / Set</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

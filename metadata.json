@@ -1,5 +1,5 @@
 {
-  "name": "Copy of Sonic DNA Discovery",
+  "name": "Sonic DNA Discovery",
   "description": "A precision music recommendation engine using Gemini to analyze sonic textures, rhythm, and soundstage for strict or discovery-based artist matching.",
   "requestFramePermissions": []
 }
